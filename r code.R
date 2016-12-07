@@ -1,0 +1,22 @@
+Final_cows <- read_excel("C:/Users/andre/Downloads/Final_cows.xlsx")
+View(Final_cows)
+with(Final_cows, plot(count, precip))
+plot(precip ~ count, data = Final_cows)
+title(main= "Monthly Precipitation vs. Cattle sales")
+with(Final_cows, cor(count, precip))
+with(Final_cows, cor(count, precip))^2
+summary(Final_cows)
+with(Final_cows, cor.test(count,precip))
+lm(count~precip, data = Final_cows)
+lm(formula = count ~ precip, data =Final_cows)
+lm.out = lm(count ~ precip, data = Final_cows)
+lm(formula = count ~ precip, data = Final_cows)
+summary(lm.out)
+options(show.signif.stars=F)
+anova(lm.out)
+plot(count ~ precip, data = Final_cows, main ="Cow Sales and Precipitation")
+abline(lm.out, col="red")
+par(mfrow=c(2,2))
+plot(lm.out)
+
+
