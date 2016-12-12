@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+
+<!-- Evolver Model Specification File -->
+<RePastEvolver:EvolverModelSpec xmlns:RePastEvolver="http://src.uchicago.edu/simbuilder/">
+<RePastEvolver:EvolverProject  ProjectDirectory="C:\Repast 3\Agent Analyst\output" PackageName="default_package" ProjectName="Environment" ClassPath="" consoleErr="true" consoleOut="true" >
+<Description>
+<![CDATA[
+Attempt to fix initial color set issue, where the polygons initialized with a random distribution of green and brown.
+]]>
+</Description>
+<RePastEvolver:EvolverModel  ModelName="GISModel" DisplayName="Color Test 4" Class="class uchicago.src.simbuilder.beans.gis.DefaultGISModelProducer" gisPackage="ArcGIS" >
+  <RePastEvolver:action name="initAgents" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def initAgents():
+  self.datasource = "C:/Users/Travis/Documents/ArcGIS 10.3/Projects/Ranch Response/Shape_files/ranchers.shp"
+  self.setupRanchers()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="updateDisplay" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def updateDisplay():
+  self.updateGISDisplay()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="writeAgents" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def writeAgents():
+  self.writeAgents(self.ranchers,self.datasource)
+  self.getTimeStep()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="setupRanchers" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def setupRanchers():
+  ranchersByID = HashMap()
+  for rancher as Rancher in self.ranchers:
+    ranchersByID.put(rancher.getRANCHER_ID(),rancher)
+    rancher.setCOLOR("BROWN")
+    # rancher.setStock(Random.uniform.nextIntFromTo(5000,10000))
+    rancher.setStock(Random.uniform.nextDoubleFromTo(5000, 10000))
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="getTimeStep" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def getTimeStep():
+  self.TimeStep = self.TimeStep + 1
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="datasource" type="java.lang.String" defaultValue="" probe="false" accessible="false" />
+<RePastEvolver:parameter name="TimeStep" type="int" defaultValue="1" probe="false" accessible="true" />
+<RePastEvolver:parameter name="strike" type="float" defaultValue=".75" probe="true" accessible="true" />
+
+
+<RePastEvolver:schedule order="0 1 2" />
+<RePastEvolver:schedule_item action="writeAgents" tick="1.0" type="1" last="false" target="GISModel" id="1"/>
+<RePastEvolver:schedule_item action="updateDisplay" tick="1.0" type="1" last="false" target="GISModel" id="2"/>
+
+<RePastEvolver:EvolverBean type="Compileable" class="class uchicago.src.simbuilder.beans.gis.VectorAgentProducer" name="Rancher" groupName="ranchers">
+<VectorDataSource shapefile="C:\Users\Travis\Documents\ArcGIS 10.3\Projects\Ranch Response\Shape_files\ranchers.shp" displayField="COLOR" gisPackage="ArcGIS">
+<VectorDataSourceDisplayValue field="default value" color="-3381760" isDefault="true" thickness="-1" />
+</VectorDataSource>
+
+  <RePastEvolver:action name="step" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def step():
+  self.setInsurance()
+  self.adjustStock()
+  
+  print "Rancher", self.RANCHER_ID, self.stock
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="setInsurance" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def setInsurance():
+  precip = Random.uniform.nextIntFromTo(25, 250)
+  
+ # need to find average precipitation for each polygon since 1948
+ # precip = getattr(self,"F" + str(self.model.TimeStep))
+ # precip = getattr(self, "attribute")
+ # precip = self.getClass().getField("F" + String(self.model.TimeStep).get(self))
+
+  if precip < self.PrecipAv * self.model.strike:
+    self.setCOLOR("GREEN")
+    self.coulda_count = self.coulda_count + 1
+    if self.coulda_count / self.model.TimeStep > .5:
+      self.woulda_count = self.woulda_count + 1
+  else:
+    self.setCOLOR("BROWN")
+  
+# getattr = BUILTIN FUNCTION
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="adjustStock" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def adjustStock():
+  
+  self.stock = self.stock # * (self.precip/self.PrecipAv)
+  
+  # System.out.println((int) Math.ceil(self.stock /(self.precip/self.PrecipAv)))
+  
+  # self.stock = Math.ceil(self.stock * self.precip/self.PrecipAv)
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="precip" type="float" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="stock" type="double" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="coulda_count" type="int" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="woulda_count" type="int" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="insured" type="boolean" defaultValue="False" probe="false" accessible="true" />
+
+<RePastEvolver:schedule_item action="step" tick="1.0" type="1" last="false" target="for all Rancher" id="0"/>
+
+</RePastEvolver:EvolverBean>
+
+
+</RePastEvolver:EvolverModel>
+</RePastEvolver:EvolverProject>
+</RePastEvolver:EvolverModelSpec>
