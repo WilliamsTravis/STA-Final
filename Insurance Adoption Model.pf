@@ -1,0 +1,9 @@
+runs: 1
+Strike {
+  set: .75
+}
+
+neighborTolerance {
+  set: .5
+}
+

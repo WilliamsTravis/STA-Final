@@ -1,0 +1,704 @@
+<?xml version="1.0"?>
+
+<!-- Evolver Model Specification File -->
+<RePastEvolver:EvolverModelSpec xmlns:RePastEvolver="http://src.uchicago.edu/simbuilder/">
+<RePastEvolver:EvolverProject  ProjectDirectory="C:\Repast 3\Agent Analyst\output" PackageName="default_package" ProjectName="Environment" ClassPath="" consoleErr="true" consoleOut="true" >
+<Description>
+<![CDATA[
+The, hopefully, final version of the insurance adoption ABM.
+I am hoping that adding the code from the other will fix whatever problem it has.
+]]>
+</Description>
+<RePastEvolver:EvolverModel  ModelName="GISModel" DisplayName="Insurance Adoption Model" Class="class uchicago.src.simbuilder.beans.gis.DefaultGISModelProducer" gisPackage="ArcGIS" >
+  <RePastEvolver:action name="initAgents" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def initAgents():
+  self.datasource = "C:/Users/Travis/Documents/ArcGIS 10.3/Projects/Ranch Response/Shape_files/ranchers.shp"
+  self.setupRanchers()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="updateDisplay" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def updateDisplay():
+  self.updateGISDisplay()
+  self.theTimeStep()
+
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="writeAgents" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def writeAgents():
+  self.writeAgents(self.ranchers,self.datasource)
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="setupRanchers" sigReadOnly="false" retType="void" imports="java.io.BufferedReader java.io.FileReader java.util.StringTokenizer" paramNames="">
+<![CDATA[
+def setupRanchers():
+  ranchersByID = HashMap()
+  for rancher as Rancher in self.ranchers:
+    ranchersByID.put(rancher.getRANCHER_ID(),rancher)
+    rancher.setCOLOR("BROWN")
+    rancher.setStock(Random.uniform.nextDoubleFromTo(5000, 10000))
+    rancher.setMyNeighbors(ArrayList())  
+  reader = BufferedReader(FileReader("C:/Users/Travis/Documents/GitHub/STA-Final/data/neighbors.txt"))
+  line = reader.readLine()
+  while (line):
+    tokenizer = StringTokenizer(line, ":")
+    if (tokenizer.hasMoreTokens()):
+      rancherID = tokenizer.nextToken().trim()
+      rancher = (Rancher)ranchersByID.get(rancherID)
+      nghs = rancher.getMyNeighbors()
+      nghIDs = tokenizer.nextToken().trim()
+      nghTok = StringTokenizer(nghIDs, ",")
+      while (nghTok.hasMoreTokens()):
+        ngh = ranchersByID.get(nghTok.nextToken())
+        nghs.add(ngh)
+    line = reader.readLine()
+  reader.close()
+  
+  self.printNeighbors()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="theTimeStep" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def theTimeStep():
+  self.TimeStep = self.TimeStep + 1
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="printNeighbors" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def printNeighbors():
+  # for the first 10 blocks prints the number of neighbors to console
+  i = 0
+  for ranch as Rancher in self.ranchers:
+    id = ranch.getRANCHER_ID()
+    count = ranch.getMyNeighbors().size()
+    print "Ranch:", id, "has",count,"neighbors"
+    i = i + 1
+    if i > 21:
+      break  
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="datasource" type="java.lang.String" defaultValue="" probe="false" accessible="false" />
+<RePastEvolver:parameter name="TimeStep" type="int" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="Strike" type="double" defaultValue=".75" probe="true" accessible="true" />
+<RePastEvolver:parameter name="neighborTolerance" type="double" defaultValue=".5" probe="true" accessible="true" />
+
+
+<RePastEvolver:schedule order="0 1 2" />
+<RePastEvolver:schedule_item action="writeAgents" tick="1.0" type="1" last="false" target="GISModel" id="1"/>
+<RePastEvolver:schedule_item action="updateDisplay" tick="1.0" type="1" last="false" target="GISModel" id="2"/>
+
+<RePastEvolver:EvolverBean type="Compileable" class="class uchicago.src.simbuilder.beans.gis.VectorAgentProducer" name="Rancher" groupName="ranchers">
+<VectorDataSource shapefile="C:\Users\Travis\Documents\ArcGIS 10.3\Projects\Ranch Response\Shape_files\ranchers.shp" displayField="COLOR" gisPackage="ArcGIS">
+<VectorDataSourceDisplayValue field="default value" color="-65536" isDefault="true" thickness="-1" />
+</VectorDataSource>
+
+  <RePastEvolver:action name="step" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def step():
+  self.setInsurance()
+  self.adjustStock() 
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="setInsurance" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def setInsurance():
+  
+  if (self.model.TimeStep == 1):
+    precip = self.F1
+  elif (self.model.TimeStep == 2):
+    precip = self.F2
+  elif (self.model.TimeStep == 3):
+    precip = self.F3
+  elif (self.model.TimeStep == 4):
+    precip = self.F4
+  elif (self.model.TimeStep == 5):
+    precip = self.F5
+  elif (self.model.TimeStep == 6):
+    precip = self.F6
+  elif (self.model.TimeStep == 7):
+    precip = self.F7  
+  elif (self.model.TimeStep == 8):
+    precip = self.F8  
+  elif (self.model.TimeStep == 9):
+    precip = self.F9   
+  elif (self.model.TimeStep == 10):
+    precip = self.F10
+  elif (self.model.TimeStep == 11):
+    precip = self.F11
+  elif (self.model.TimeStep == 12):
+    precip = self.F12
+  elif (self.model.TimeStep == 13):
+    precip = self.F13
+  elif (self.model.TimeStep == 14):
+    precip = self.F14
+  elif (self.model.TimeStep == 15):
+    precip = self.F15
+  elif (self.model.TimeStep == 16):
+    precip = self.F16
+  elif (self.model.TimeStep == 17):
+    precip = self.F17  
+  elif (self.model.TimeStep == 18):
+    precip = self.F18  
+  elif (self.model.TimeStep == 19):
+    precip = self.F19   
+  elif (self.model.TimeStep == 20):
+    precip = self.F1
+  elif (self.model.TimeStep == 21):
+    precip = self.F21  
+  elif (self.model.TimeStep == 22):
+    precip = self.F22
+  elif (self.model.TimeStep == 23):
+    precip = self.F23
+  elif (self.model.TimeStep == 24):
+    precip = self.F24
+  elif (self.model.TimeStep == 25):
+    precip = self.F25
+  elif (self.model.TimeStep == 26):
+    precip = self.F26
+  elif (self.model.TimeStep == 27):
+    precip = self.F27  
+  elif (self.model.TimeStep == 28):
+    precip = self.F28  
+  elif (self.model.TimeStep == 29):
+    precip = self.F29
+  elif (self.model.TimeStep == 30):
+    precip = self.F30 
+  elif (self.model.TimeStep == 31):
+    precip = self.F31
+  elif (self.model.TimeStep == 32):
+    precip = self.F32  
+  elif (self.model.TimeStep == 33):
+    precip = self.F33
+  elif (self.model.TimeStep == 34):
+    precip = self.F34  
+  elif (self.model.TimeStep == 35):
+    precip = self.F35
+  elif (self.model.TimeStep == 36):
+    precip = self.F36  
+  elif (self.model.TimeStep == 37):
+    precip = self.F37
+  elif (self.model.TimeStep == 38):
+    precip = self.F38     
+  elif (self.model.TimeStep == 39):
+    precip = self.F39
+  elif (self.model.TimeStep == 40):
+    precip = self.F40
+  elif (self.model.TimeStep == 41):
+    precip = self.F41
+  elif (self.model.TimeStep == 42):
+    precip = self.F42
+  elif (self.model.TimeStep == 43):
+    precip = self.F43
+  elif (self.model.TimeStep == 44):
+    precip = self.F44
+  elif (self.model.TimeStep == 45):
+    precip = self.F45
+  elif (self.model.TimeStep == 46):
+    precip = self.F46
+  elif (self.model.TimeStep == 47):
+    precip = self.F47  
+  elif (self.model.TimeStep == 48):
+    precip = self.F48  
+  elif (self.model.TimeStep == 49):
+    precip = self.F49   
+  elif (self.model.TimeStep == 50):
+    precip = self.F50      
+  elif (self.model.TimeStep == 51):
+    precip = self.F51
+  elif (self.model.TimeStep == 52):
+    precip = self.F52
+  elif (self.model.TimeStep == 53):
+    precip = self.F53
+  elif (self.model.TimeStep == 54):
+    precip = self.F54
+  elif (self.model.TimeStep == 55):
+    precip = self.F55
+  elif (self.model.TimeStep == 56):
+    precip = self.F56
+  elif (self.model.TimeStep == 57):
+    precip = self.F57  
+  elif (self.model.TimeStep == 58):
+    precip = self.F58  
+  elif (self.model.TimeStep == 59):
+    precip = self.F59   
+  elif (self.model.TimeStep == 60):
+    precip = self.F60  
+  elif (self.model.TimeStep ==61):
+    precip = self.F61
+  elif (self.model.TimeStep == 62):
+    precip = self.F62
+  elif (self.model.TimeStep == 63):
+    precip = self.F63
+  elif (self.model.TimeStep == 64):
+    precip = self.F64
+  elif (self.model.TimeStep == 65):
+    precip = self.F65
+  elif (self.model.TimeStep == 66):
+    precip = self.F66
+  elif (self.model.TimeStep == 67):
+    precip = self.F67  
+  elif (self.model.TimeStep == 68):
+    precip = self.F68  
+  elif (self.model.TimeStep == 69):
+    precip = self.F69   
+  elif (self.model.TimeStep == 70):
+    precip = self.F70 
+  elif (self.model.TimeStep == 71):
+    precip = self.F71
+  elif (self.model.TimeStep == 72):
+    precip = self.F72
+  elif (self.model.TimeStep == 73):
+    precip = self.F73
+  elif (self.model.TimeStep == 74):
+    precip = self.F74
+  elif (self.model.TimeStep == 75):
+    precip = self.F75
+  elif (self.model.TimeStep == 76):
+    precip = self.F76
+  elif (self.model.TimeStep == 77):
+    precip = self.F77  
+  elif (self.model.TimeStep == 78):
+    precip = self.F78  
+  elif (self.model.TimeStep == 79):
+    precip = self.F79   
+  elif (self.model.TimeStep == 80):
+    precip = self.F80  
+  elif (self.model.TimeStep == 81):
+    precip = self.F81
+  elif (self.model.TimeStep == 82):
+    precip = self.F82
+  elif (self.model.TimeStep == 83):
+    precip = self.F83
+  elif (self.model.TimeStep == 84):
+    precip = self.F84
+  elif (self.model.TimeStep == 85):
+    precip = self.F85
+  elif (self.model.TimeStep == 86):
+    precip = self.F86
+  elif (self.model.TimeStep == 87):
+    precip = self.F87  
+  elif (self.model.TimeStep == 88):
+    precip = self.F88  
+  elif (self.model.TimeStep == 89):
+    precip = self.F89   
+  elif (self.model.TimeStep == 90):
+    precip = self.F90                 
+  elif (self.model.TimeStep == 91):
+    precip = self.F91
+  elif (self.model.TimeStep == 92):
+    precip = self.F92
+  elif (self.model.TimeStep == 93):
+    precip = self.F93
+  elif (self.model.TimeStep == 94):
+    precip = self.F94
+  elif (self.model.TimeStep == 95):
+    precip = self.F95
+  elif (self.model.TimeStep == 96):
+    precip = self.F96
+  elif (self.model.TimeStep == 97):
+    precip = self.F97  
+  elif (self.model.TimeStep == 98):
+    precip = self.F98  
+  elif (self.model.TimeStep == 99):
+    precip = self.F99   
+  elif (self.model.TimeStep == 100):
+    precip = self.F100  
+  elif (self.model.TimeStep == 101):
+    precip = self.F101
+  elif (self.model.TimeStep == 102):
+    precip = self.F102
+  elif (self.model.TimeStep == 103):
+    precip = self.F103
+  elif (self.model.TimeStep == 104):
+    precip = self.F104
+  elif (self.model.TimeStep == 105):
+    precip = self.F105
+  elif (self.model.TimeStep == 106):
+    precip = self.F106
+  elif (self.model.TimeStep == 107):
+    precip = self.F107  
+  elif (self.model.TimeStep == 108):
+    precip = self.F108  
+  elif (self.model.TimeStep == 109):
+    precip = self.F109   
+  elif (self.model.TimeStep == 110):
+    precip = self.F110  
+  elif (self.model.TimeStep == 111):
+    precip = self.F111
+  elif (self.model.TimeStep == 112):
+    precip = self.F112
+  elif (self.model.TimeStep == 113):
+    precip = self.F113
+  elif (self.model.TimeStep == 114):
+    precip = self.F114
+  elif (self.model.TimeStep == 115):
+    precip = self.F115
+  elif (self.model.TimeStep == 116):
+    precip = self.F116
+  elif (self.model.TimeStep == 117):
+    precip = self.F117  
+  elif (self.model.TimeStep == 118):
+    precip = self.F118  
+  elif (self.model.TimeStep == 119):
+    precip = self.F119
+  elif (self.model.TimeStep == 120):
+    precip = self.F120  
+  elif (self.model.TimeStep == 121):
+    precip = self.F121
+  elif (self.model.TimeStep == 122):
+    precip = self.F122
+  elif (self.model.TimeStep == 123):
+    precip = self.F123
+  elif (self.model.TimeStep == 124):
+    precip = self.F124
+  elif (self.model.TimeStep == 125):
+    precip = self.F125
+  elif (self.model.TimeStep == 126):
+    precip = self.F126
+  elif (self.model.TimeStep == 127):
+    precip = self.F127  
+  elif (self.model.TimeStep == 128):
+    precip = self.F128  
+  elif (self.model.TimeStep == 129):
+    precip = self.F129
+  elif (self.model.TimeStep == 130):
+    precip = self.F130                                                            
+  else:
+    precip = 0.0
+ 
+  print "Rancher", self.RANCHER_ID, "got", precip, "mm of rain", self.model.TimeStep, "coulda count =", self.coulda_count 
+
+      
+  if precip < self.PrecipAv * self.model.strike:
+    self.setCOLOR("GREEN")
+    self.coulda_count = self.coulda_count + 1
+    if self.coulda_count / self.model.TimeStep > .7:
+      self.woulda_count = self.woulda_count + 1
+      print "Rancher", self.RANCHER_ID,"'s woulda count =", self.woulda_count
+  else:
+    self.setCOLOR("BROWN")
+    
+  count = 0
+  
+  for nghRanch as Rancher in self.home.getMyNeighbors():
+    state = nghRanch.getCOLOR()
+    if (not state.equals("BROWN")):
+      count = count + 1
+    
+    #self.woulda_count = self.woulda_count + 1
+ # else:
+   # self.setCOLOR("BROWN")
+  
+  
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="adjustStock" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def adjustStock():
+  
+  self.stock = self.stock * (self.precip/self.PrecipAv)
+    
+  # self.stock = Math.ceil(self.stock * self.precip/self.PrecipAv)
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="monthlyPrecip" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def monthlyPrecip():
+  if (self.model.TimeStep == 1):
+    precip = self.F1
+  elif (self.model.TimeStep == 2):
+    precip = self.F2
+  elif (self.model.TimeStep == 3):
+    precip = self.F3
+  elif (self.model.TimeStep == 4):
+    precip = self.F4
+  elif (self.model.TimeStep == 5):
+    precip = self.F5
+  elif (self.model.TimeStep == 6):
+    precip = self.F6
+  elif (self.model.TimeStep == 7):
+    precip = self.F7  
+  elif (self.model.TimeStep == 8):
+    precip = self.F8  
+  elif (self.model.TimeStep == 9):
+    precip = self.F9   
+  elif (self.model.TimeStep == 10):
+    precip = self.F10
+  elif (self.model.TimeStep == 11):
+    precip = self.F11
+  elif (self.model.TimeStep == 12):
+    precip = self.F12
+  elif (self.model.TimeStep == 13):
+    precip = self.F13
+  elif (self.model.TimeStep == 14):
+    precip = self.F14
+  elif (self.model.TimeStep == 15):
+    precip = self.F15
+  elif (self.model.TimeStep == 16):
+    precip = self.F16
+  elif (self.model.TimeStep == 17):
+    precip = self.F17  
+  elif (self.model.TimeStep == 18):
+    precip = self.F18  
+  elif (self.model.TimeStep == 19):
+    precip = self.F19   
+  elif (self.model.TimeStep == 20):
+    precip = self.F1
+  elif (self.model.TimeStep == 21):
+    precip = self.F21  
+  elif (self.model.TimeStep == 22):
+    precip = self.F22
+  elif (self.model.TimeStep == 23):
+    precip = self.F23
+  elif (self.model.TimeStep == 24):
+    precip = self.F24
+  elif (self.model.TimeStep == 25):
+    precip = self.F25
+  elif (self.model.TimeStep == 26):
+    precip = self.F26
+  elif (self.model.TimeStep == 27):
+    precip = self.F27  
+  elif (self.model.TimeStep == 28):
+    precip = self.F28  
+  elif (self.model.TimeStep == 29):
+    precip = self.F29
+  elif (self.model.TimeStep == 30):
+    precip = self.F30 
+  elif (self.model.TimeStep == 31):
+    precip = self.F31
+  elif (self.model.TimeStep == 32):
+    precip = self.F32  
+  elif (self.model.TimeStep == 33):
+    precip = self.F33
+  elif (self.model.TimeStep == 34):
+    precip = self.F34  
+  elif (self.model.TimeStep == 35):
+    precip = self.F35
+  elif (self.model.TimeStep == 36):
+    precip = self.F36  
+  elif (self.model.TimeStep == 37):
+    precip = self.F37
+  elif (self.model.TimeStep == 38):
+    precip = self.F38     
+  elif (self.model.TimeStep == 39):
+    precip = self.F39
+  elif (self.model.TimeStep == 40):
+    precip = self.F40
+  elif (self.model.TimeStep == 41):
+    precip = self.F41
+  elif (self.model.TimeStep == 42):
+    precip = self.F42
+  elif (self.model.TimeStep == 43):
+    precip = self.F43
+  elif (self.model.TimeStep == 44):
+    precip = self.F44
+  elif (self.model.TimeStep == 45):
+    precip = self.F45
+  elif (self.model.TimeStep == 46):
+    precip = self.F46
+  elif (self.model.TimeStep == 47):
+    precip = self.F47  
+  elif (self.model.TimeStep == 48):
+    precip = self.F48  
+  elif (self.model.TimeStep == 49):
+    precip = self.F49   
+  elif (self.model.TimeStep == 50):
+    precip = self.F50      
+  elif (self.model.TimeStep == 51):
+    precip = self.F51
+  elif (self.model.TimeStep == 52):
+    precip = self.F52
+  elif (self.model.TimeStep == 53):
+    precip = self.F53
+  elif (self.model.TimeStep == 54):
+    precip = self.F54
+  elif (self.model.TimeStep == 55):
+    precip = self.F55
+  elif (self.model.TimeStep == 56):
+    precip = self.F56
+  elif (self.model.TimeStep == 57):
+    precip = self.F57  
+  elif (self.model.TimeStep == 58):
+    precip = self.F58  
+  elif (self.model.TimeStep == 59):
+    precip = self.F59   
+  elif (self.model.TimeStep == 60):
+    precip = self.F60  
+  elif (self.model.TimeStep ==61):
+    precip = self.F61
+  elif (self.model.TimeStep == 62):
+    precip = self.F62
+  elif (self.model.TimeStep == 63):
+    precip = self.F63
+  elif (self.model.TimeStep == 64):
+    precip = self.F64
+  elif (self.model.TimeStep == 65):
+    precip = self.F65
+  elif (self.model.TimeStep == 66):
+    precip = self.F66
+  elif (self.model.TimeStep == 67):
+    precip = self.F67  
+  elif (self.model.TimeStep == 68):
+    precip = self.F68  
+  elif (self.model.TimeStep == 69):
+    precip = self.F69   
+  elif (self.model.TimeStep == 70):
+    precip = self.F70 
+  elif (self.model.TimeStep == 71):
+    precip = self.F71
+  elif (self.model.TimeStep == 72):
+    precip = self.F72
+  elif (self.model.TimeStep == 73):
+    precip = self.F73
+  elif (self.model.TimeStep == 74):
+    precip = self.F74
+  elif (self.model.TimeStep == 75):
+    precip = self.F75
+  elif (self.model.TimeStep == 76):
+    precip = self.F76
+  elif (self.model.TimeStep == 77):
+    precip = self.F77  
+  elif (self.model.TimeStep == 78):
+    precip = self.F78  
+  elif (self.model.TimeStep == 79):
+    precip = self.F79   
+  elif (self.model.TimeStep == 80):
+    precip = self.F80  
+  elif (self.model.TimeStep == 81):
+    precip = self.F81
+  elif (self.model.TimeStep == 82):
+    precip = self.F82
+  elif (self.model.TimeStep == 83):
+    precip = self.F83
+  elif (self.model.TimeStep == 84):
+    precip = self.F84
+  elif (self.model.TimeStep == 85):
+    precip = self.F85
+  elif (self.model.TimeStep == 86):
+    precip = self.F86
+  elif (self.model.TimeStep == 87):
+    precip = self.F87  
+  elif (self.model.TimeStep == 88):
+    precip = self.F88  
+  elif (self.model.TimeStep == 89):
+    precip = self.F89   
+  elif (self.model.TimeStep == 90):
+    precip = self.F90                 
+  elif (self.model.TimeStep == 91):
+    precip = self.F91
+  elif (self.model.TimeStep == 92):
+    precip = self.F92
+  elif (self.model.TimeStep == 93):
+    precip = self.F93
+  elif (self.model.TimeStep == 94):
+    precip = self.F94
+  elif (self.model.TimeStep == 95):
+    precip = self.F95
+  elif (self.model.TimeStep == 96):
+    precip = self.F96
+  elif (self.model.TimeStep == 97):
+    precip = self.F97  
+  elif (self.model.TimeStep == 98):
+    precip = self.F98  
+  elif (self.model.TimeStep == 99):
+    precip = self.F99   
+  elif (self.model.TimeStep == 100):
+    precip = self.F100  
+  elif (self.model.TimeStep == 101):
+    precip = self.F101
+  elif (self.model.TimeStep == 102):
+    precip = self.F102
+  elif (self.model.TimeStep == 103):
+    precip = self.F103
+  elif (self.model.TimeStep == 104):
+    precip = self.F104
+  elif (self.model.TimeStep == 105):
+    precip = self.F105
+  elif (self.model.TimeStep == 106):
+    precip = self.F106
+  elif (self.model.TimeStep == 107):
+    precip = self.F107  
+  elif (self.model.TimeStep == 108):
+    precip = self.F108  
+  elif (self.model.TimeStep == 109):
+    precip = self.F109   
+  elif (self.model.TimeStep == 110):
+    precip = self.F110  
+  elif (self.model.TimeStep == 111):
+    precip = self.F111
+  elif (self.model.TimeStep == 112):
+    precip = self.F112
+  elif (self.model.TimeStep == 113):
+    precip = self.F113
+  elif (self.model.TimeStep == 114):
+    precip = self.F114
+  elif (self.model.TimeStep == 115):
+    precip = self.F115
+  elif (self.model.TimeStep == 116):
+    precip = self.F116
+  elif (self.model.TimeStep == 117):
+    precip = self.F117  
+  elif (self.model.TimeStep == 118):
+    precip = self.F118  
+  elif (self.model.TimeStep == 119):
+    precip = self.F119
+  elif (self.model.TimeStep == 120):
+    precip = self.F120  
+  elif (self.model.TimeStep == 121):
+    precip = self.F121
+  elif (self.model.TimeStep == 122):
+    precip = self.F122
+  elif (self.model.TimeStep == 123):
+    precip = self.F123
+  elif (self.model.TimeStep == 124):
+    precip = self.F124
+  elif (self.model.TimeStep == 125):
+    precip = self.F125
+  elif (self.model.TimeStep == 126):
+    precip = self.F126
+  elif (self.model.TimeStep == 127):
+    precip = self.F127  
+  elif (self.model.TimeStep == 128):
+    precip = self.F128  
+  elif (self.model.TimeStep == 129):
+    precip = self.F129
+  elif (self.model.TimeStep == 130):
+    precip = self.F130                                                            
+  else:
+    precip = 0.0
+
+    
+   
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="precip" type="float" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="stock" type="double" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="coulda_count" type="float" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="woulda_count" type="int" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="shoulda_count" type="int" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="myNeighbors" type="java.util.ArrayList" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="home" type="Rancher" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="insured" type="boolean" defaultValue="False" probe="false" accessible="true" />
+
+<RePastEvolver:schedule_item action="step" tick="1.0" type="1" last="false" target="for all Rancher" id="0"/>
+
+</RePastEvolver:EvolverBean>
+
+
+</RePastEvolver:EvolverModel>
+</RePastEvolver:EvolverProject>
+</RePastEvolver:EvolverModelSpec>
