@@ -1,0 +1,67 @@
+{\rtf1}
+
+  self.precip = precip
+  count = 0
+  totalNeighbors =  self.getMyNeighbors().size()  
+  
+  if self.insured == true:
+    self.setInsured(true)
+      
+  if (self.insured == false):    
+    if precip >= (.85 * self.PrecipAv) and self.stock <= (1.15 * self.PrecipAv):
+      self.stock = self.stock
+    elif precip >= (1.15 * self.PrecipAv):
+      self.stock = 1.25 * self.stock 
+    else: 
+      self.stock = self.stock - (.08 * self.stock)
+  
+  if (self.insured == true):
+    if precip >= (.85 * self.PrecipAv) and self.stock <= (1.15 * self.PrecipAv):
+      self.stock = self.stock
+    elif precip >= (1.15 * self.PrecipAv):
+      self.stock = 1.25 * self.stock 
+    else: 
+      self.stock = self.stock - (.01 * self.stock)
+  
+  if self.stock < (.85 * self.initial_stock):
+    self.shoulda_count = self.shoulda_count + Random.uniform.nextDoubleFromTo(.85, 1.15)
+       
+  if precip < self.PrecipAv * self.model.strike:
+    self.setCOLOR("GREEN")
+    self.missed_count = self.missed_count + 1
+    if self.missed_count / self.model.TimeStep > .3:
+      self.coulda_count = self.coulda_count + Random.uniform.nextDoubleFromTo(.85, 1.15)
+      print "Rancher", self.RANCHER_ID,"'s woulda count =", self.woulda_count
+  else:
+    self.setCOLOR("BROWN")
+
+  totalNeighbors =  self.getMyNeighbors().size()  
+  for nghRanch as Rancher in self.getMyNeighbors():
+    if nghRanch.insured == true:
+      count = count + 1
+      if count / totalNeighbors > .5:
+        self.woulda_count = self.woulda_count + Random.uniform.nextDoubleFromTo(.85, 1.15)
+        print "Rancher", self.RANCHER_ID,"insured neighbor count=",count,"woulda count =", self.woulda_count 
+        
+  if self.insured == false:
+    self.maybe_should = (self.coulda_count +  self.woulda_count + self.shoulda_count)/ self.model.TimeStep
+    if self.stock < 2000:
+      self.setInsured(true)
+    elif (self.maybe_should > self.thats_it):
+      self.setInsured(true)
+    
+  if self.insured == true:
+    self.setCOLOR("RED")
+    print "Rancher",self.RANCHER_ID,"is now insuranced"
+    if precip < self.PrecipAv * self.model.strike:
+      self.setCOLOR("ORANGE")
+  if (self.insured == true):
+    if precip >= (.85 * self.PrecipAv) and self.stock <= (1.15 * self.PrecipAv):
+      self.stock = self.stock
+    elif precip >= (1.15 * self.PrecipAv):
+      self.stock = 1.25 * self.stock 
+    else: 
+      self.stock = self.stock - (.01 * self.stock)
+  # print "Rancher", self.RANCHER_ID,": Insured =", self.insured,"   precipitation =",precip,"mm,   could've recieved a payout", self.missed_count, "times. Stock =", self.stock
+  # print "Rancher", self.RANCHER_ID,"Month:",self.model.TimeStep,": Coulda =",self.coulda_count,"Woulda_count =", self.woulda_count,"Shoulda_count =", self.shoulda_count, "Stock =", self.stock
+  print "Rancher", self.RANCHER_ID,"Month:",self.model.TimeStep,": Decision Weight =",self.maybe_should
