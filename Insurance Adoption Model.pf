@@ -1,13 +1,17 @@
 runs: 1
-neighborTolerance {
-  set: .5
-}
-
 StrikeLowerRange {
   set: .7
 }
 
 StrikeUpperRange {
   set: .9
+}
+
+SensitivityLowerRange {
+  set: .25
+}
+
+SensitivityUpperRange {
+  set: .65
 }
 

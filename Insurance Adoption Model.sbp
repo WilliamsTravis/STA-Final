@@ -42,6 +42,7 @@ def setupRanchers():
     rancher.setCOLOR("BROWN")
     stock = Random.uniform.nextDoubleFromTo(5000, 10000)
     rancher.setStrike(Random.uniform.nextDoubleFromTo(self.StrikeLowerRange,self.StrikeUpperRange))
+    rancher.setNeighborSensitivity(Random.uniform.nextDoubleFromTo(self.SensitivityLowerRange,self.SensitivityUpperRange))
     rancher.setStock(stock)
     rancher.setInitial_stock(stock)
     rancher.setMyNeighbors(ArrayList())  
@@ -79,7 +80,7 @@ def printNeighbors():
   for ranch as Rancher in self.ranchers:
     id = ranch.getRANCHER_ID()
     count = ranch.getMyNeighbors().size()
-    print "Ranch", id,": Average Precipitation =",ranch.PrecipAv,"mm, Stock =",ranch.stock, "Initial_stock =", ranch.initial_stock,"Strike =", ranch.strike
+    print "Ranch", id,": Average Precipitation =",ranch.PrecipAv,"mm,  Initial stock =", ranch.initial_stock
     i = i + 1
     if i > 21:
       break
@@ -88,13 +89,14 @@ def printNeighbors():
 
 
 <RePastEvolver:parameter name="datasource" type="java.lang.String" defaultValue="" probe="false" accessible="false" />
-<RePastEvolver:parameter name="neighborTolerance" type="double" defaultValue=".5" probe="true" accessible="true" />
 <RePastEvolver:parameter name="TimeStep" type="int" defaultValue="1" probe="false" accessible="true" />
 <RePastEvolver:parameter name="StrikeLowerRange" type="double" defaultValue=".7" probe="true" accessible="true" />
 <RePastEvolver:parameter name="StrikeUpperRange" type="double" defaultValue=".9" probe="true" accessible="true" />
+<RePastEvolver:parameter name="SensitivityLowerRange" type="double" defaultValue=".25" probe="true" accessible="true" />
+<RePastEvolver:parameter name="SensitivityUpperRange" type="double" defaultValue=".65" probe="true" accessible="true" />
 
 
-<RePastEvolver:schedule order="0 2 3" />
+<RePastEvolver:schedule order="0 2 3 4" />
 <RePastEvolver:schedule order="1"/>
 <RePastEvolver:schedule_item action="writeAgents" tick="1.0" type="1" last="false" target="GISModel" id="2"/>
 <RePastEvolver:schedule_item action="updateDisplay" tick="1.0" type="1" last="false" target="GISModel" id="3"/>
@@ -122,9 +124,8 @@ def setInsurance():
     self.ifInsured()
     
   print "Rancher", self.RANCHER_ID,": Insured =", self.insured,"   precipitation =",self.precip,"mm,   missed payouts = ", self.missed_count, "times. Stock =", self.stock
-  #print "Rancher", self.RANCHER_ID,"Month:",self.model.TimeStep,": Coulda =",self.coulda_count,"Woulda_count =", self.woulda_count,"Shoulda_count =", self.shoulda_count, "Stock =", self.stock
-  #print "Rancher", self.RANCHER_ID,"Month:",self.model.TimeStep,": Decision Weight =",self.maybe_should
-
+  # print "Rancher", self.RANCHER_ID,"Month:",self.model.TimeStep,": Coulda =",self.coulda_count,"Woulda_count =", self.woulda_count,"Shoulda_count =", self.shoulda_count, "Stock =", self.stock
+  # print "Rancher", self.RANCHER_ID,"Month:",self.model.TimeStep,": Decision Weight =",self.maybe_should
 ]]>
 </RePastEvolver:action>
 
@@ -161,7 +162,7 @@ def ifUninsured():
   for nghRanch as Rancher in self.getMyNeighbors():
     if nghRanch.insured == true:
       count = count + 1
-      if count / totalNeighbors > self.model.neighborTolerance:
+      if count / totalNeighbors > self.neighborSensitivity:
         self.woulda_count = self.woulda_count + Random.uniform.nextDoubleFromTo(.85, 1.15)
         print "Rancher", self.RANCHER_ID,"insured neighbor count=",count,"woulda count =", self.woulda_count 
 
@@ -483,11 +484,34 @@ def adjustPrecip():
 <RePastEvolver:parameter name="initial_stock" type="double" defaultValue="0" probe="false" accessible="true" />
 <RePastEvolver:parameter name="thats_it" type="double" defaultValue="1" probe="false" accessible="true" />
 <RePastEvolver:parameter name="strike" type="double" defaultValue="0" probe="false" accessible="true" />
+<RePastEvolver:parameter name="neighborSensitivity" type="double" defaultValue="0" probe="false" accessible="true" />
 
 <RePastEvolver:schedule_item action="step" tick="1.0" type="1" last="false" target="for all Rancher" id="0"/>
 <RePastEvolver:schedule_item action="step" tick="130.0" type="5" last="false" target="for all Rancher" id="1"/>
 
 </RePastEvolver:EvolverBean>
+
+<RePastEvolver:EvolverBean type="Component" class="uchicago.src.simbuilder.beans.SequenceGraph" name="Precipitation" title="Sequence Graph" xAxisTitle="Time"
+ yAxisTitle="Average Monthly Precipitation" xAxisStart="100.0" yAxisStart="15.0">
+
+
+<RePastEvolver:file_property doWrite="false" fileName="" />
+<RePastEvolver:seqAction name="rain" imports="" retVal="double" paramNames="" color="0 0 255" pointType="7">
+<![CDATA[
+count = self.ranchers.size()
+sum = 0.0
+
+for rancher as Rancher in self.ranchers:
+  sum = sum + rancher.precip
+return sum / count
+]]>
+</RePastEvolver:seqAction>
+<RePastEvolver:schedule_item action="update" tick="1.0" type="1" last="false" target="Sequence Graph: Precipitation" id="4"/>
+
+</RePastEvolver:EvolverBean>
+
+
+
 
 
 </RePastEvolver:EvolverModel>
